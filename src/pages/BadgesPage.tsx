@@ -1,17 +1,160 @@
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Trophy, Lock, TrendingUp, Award, Zap } from 'lucide-react';
 import { mockBadges, currentUser, topContributors } from '../data/mockData';
 import { BadgeUnlockModal } from '../components/badges/BadgeUnlockModal';
+import ProgressBar from '@ramonak/react-progress-bar';
+import type { Badge } from '../types/index';
+
+
+// --- Badge thresholds (source of truth)
+const BADGE_THRESHOLDS = {
+  'Rising Star': 50,
+  Achiever: 100,
+  Performer: 150,
+  Innovator: 200,
+  Trailblazer: 500,
+  Legend: 1000,
+} as const;
+
+
+type BadgeName =
+  | 'Rising Star'
+  | 'Achiever'
+  | 'Performer'
+  | 'Innovator'
+  | 'Trailblazer'
+  | 'Legend';
+
+
+type Badge = {
+  id: string;
+  name: BadgeName;
+  description: string;
+  tier: number;
+  pointsRequired: number;
+  unlockedDate?: string; // optional, for display only
+};
+
+
+const BADGES: Badge[] = [
+  {
+    id: '1',
+    name: 'Rising Star',
+    description: 'Welcome to team! Awarded on first day.',
+    tier: 1,
+    pointsRequired: 50,
+    unlockedDate: '2024-01-15',
+  },
+  {
+    id: '2',
+    name: 'Achiever',
+    description: 'Actively participating in peer recognition.',
+    tier: 2,
+    pointsRequired: 100,
+    unlockedDate: '2024-03-20',
+  },
+  {
+    id: '3',
+    name: 'Performer',
+    description: 'Completed 5 significant achievements.',
+    tier: 3,
+    pointsRequired: 150,
+    unlockedDate: '2024-06-10',
+  },
+  {
+    id: '4',
+    name: 'Innovator',
+    description: 'Consistently delivering excellent work.',
+    tier: 4,
+    pointsRequired: 200,
+    unlockedDate: '2024-09-05',
+  },
+  {
+    id: '5',
+    name: 'Trailblazer',
+    description: 'A leader in peer appreciation and achievement.',
+    tier: 5,
+    pointsRequired: 500,
+  },
+  {
+    id: '6',
+    name: 'Legend',
+    description: 'The ultimate recognition master.',
+    tier: 7,
+    pointsRequired: 1000,
+  },
+]
+
+// --- Helper: resolve emoji per badge (cleaner than nested ternaries)
+function badgeEmoji(name: BadgeName): string {
+  switch (name) {
+    case 'Rising Star':
+      return '🌟';
+    case 'Achiever':
+      return '🏅';
+    case 'Performer':
+      return '🎯';
+    case 'Innovator':
+      return '💡';
+    case 'Trailblazer':
+      return '🔥';
+    case 'Legend':
+      return '👑';
+    default:
+      return '';
+  }
+}
+
+// Split badges based on points
+function splitBadgesByPoints(points: number | null, badges: Badge[]) {
+  if (points == null) {
+    return { unlockedBadges: [] as Badge[], lockedBadges: badges.slice().sort((a, b) => a.pointsRequired - b.pointsRequired) };
+  }
+  const unlockedBadges = badges.filter(b => points >= b.pointsRequired).sort((a, b) => a.pointsRequired - b.pointsRequired);
+  const lockedBadges = badges.filter(b => points < b.pointsRequired).sort((a, b) => a.pointsRequired - b.pointsRequired);
+  return { unlockedBadges, lockedBadges };
+}
+
+// Find the next badge to unlock
+function getNextBadge(points: number | null, badges: Badge[]) {
+  if (points == null) return null;
+  return badges
+    .filter(b => b.pointsRequired > points)
+    .sort((a, b) => a.pointsRequired - b.pointsRequired)[0] ?? null;
+}
+
 
 export function BadgesPage() {
   const [showUnlockModal, setShowUnlockModal] = useState(false);
-  const unlockedBadges = mockBadges.filter(b => b.unlocked);
-  const lockedBadges = mockBadges.filter(b => !b.unlocked);
-  const nextBadge = lockedBadges[0];
-  const pointsToNext = nextBadge ? nextBadge.pointsRequired - currentUser.points : 0;
-  const progressPercent = nextBadge 
-    ? Math.min((currentUser.points / nextBadge.pointsRequired) * 100, 100)
+  const [points, setPoints] = useState<number | null>(null);
+  const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null)
+
+  useEffect(() => {
+    const fetchPoints = async () => {
+      setPoints(800)
+    };
+    fetchPoints();
+  }, []);
+
+  const { unlockedBadges, lockedBadges } = useMemo(
+    () => splitBadgesByPoints(points, BADGES),
+    [points]
+  );
+
+  // const unlockedBadges = mockBadges.filter(b => b.unlocked);
+  // const lockedBadges = mockBadges.filter(b => !b.unlocked);
+  const nextBadge = useMemo(() => getNextBadge(points, BADGES), [points]);
+  const pointsToNext = nextBadge && points != null ? Math.max(nextBadge.pointsRequired - points, 0) : 0;
+  const progressPercent = nextBadge && points != null
+    ? Math.min((points / nextBadge.pointsRequired) * 100, 100)
     : 100;
+
+
+  const handleBadgeClick = (badge: Badge) => {
+    setSelectedBadge(badge);
+    setShowUnlockModal(true);
+  };
+
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
@@ -30,7 +173,7 @@ export function BadgesPage() {
             <p className="text-blue-100 mb-2">Your Current Points</p>
             <p className="text-5xl mb-4">{currentUser.points}</p>
             <p className="text-blue-100">
-              {pointsToNext > 0 
+              {pointsToNext > 0
                 ? `${pointsToNext} points to next badge`
                 : 'All badges unlocked! 🎉'
               }
@@ -43,12 +186,23 @@ export function BadgesPage() {
                   <span className="text-blue-100">Progress to {nextBadge.name}</span>
                   <span className="text-white">{Math.round(progressPercent)}%</span>
                 </div>
-                <div className="h-4 bg-blue-800 rounded-full overflow-hidden">
+                {/* <div className="h-4 bg-blue-800 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-white rounded-full transition-all duration-500"
                     style={{ width: `${progressPercent}%` }}
                   />
-                </div>
+                </div> */}
+                <ProgressBar
+                  completed={progressPercent}
+                  maxCompleted={100}
+                  height="16px"
+                  bgColor="#ffffff"
+                  baseBgColor="#1e3a8a" // dark blue background
+                  isLabelVisible={true}
+                  labelColor="#ffffff"
+                  animateOnRender={true}
+                  transitionDuration="0.5s"
+                />
               </>
             )}
           </div>
@@ -109,10 +263,28 @@ export function BadgesPage() {
               <div
                 key={badge.id}
                 className="relative group cursor-pointer"
-                onClick={() => setShowUnlockModal(true)}
+                onClick={() => handleBadgeClick(badge)}
               >
                 <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-2 border-yellow-400 rounded-xl p-6 text-center hover:shadow-lg transition-all duration-200 hover:scale-105">
-                  <div className="text-5xl mb-3">{badge.icon}</div>
+                  {/* <div className="text-5xl mb-3">{badge.name === "Rising Star"
+                    ? "🌟"
+                    : badge.name === "Achiever"
+                      ? "🏅"
+                      : badge.name === "Performer"
+                        ? "🎯"
+                        : badge.name === "Innovator"
+                          ? "💡"
+                          : badge.name === "Trailblazer"
+                            ? "🔥"
+                            : badge.name === "Legend"
+                              ? "👑"
+                              : ""}
+                  </div> */}
+
+                  <div className="text-5xl mb-3">
+                    {badgeEmoji(badge.name)}
+                  </div>
+
                   <h4 className="text-neutral-900 mb-1">{badge.name}</h4>
                   <p className="text-xs text-neutral-600 mb-2">{badge.description}</p>
                   {badge.unlockedDate && (
@@ -138,7 +310,24 @@ export function BadgesPage() {
                 className="bg-neutral-50 border-2 border-neutral-200 rounded-xl p-6 text-center opacity-60"
               >
                 <div className="relative">
-                  <div className="text-5xl mb-3 grayscale">{badge.icon}</div>
+                  {/* <div className="text-5xl mb-3 grayscale">{badge.name === "Rising Star"
+                    ? "🌟"
+                    : badge.name === "Achiever"
+                      ? "🏅"
+                      : badge.name === "Performer"
+                        ? "🎯"
+                        : badge.name === "Innovator"
+                          ? "💡"
+                          : badge.name === "Trailblazer"
+                            ? "🔥"
+                            : badge.name === "Legend"
+                              ? "👑"
+                              : ""}</div> */}
+
+                  <div className="text-5xl mb-3 grayscale">
+                    {badgeEmoji(badge.name)}
+                  </div>
+
                   <Lock className="w-6 h-6 text-neutral-400 absolute top-0 right-0" />
                 </div>
                 <h4 className="text-neutral-700 mb-1">{badge.name}</h4>
@@ -153,7 +342,7 @@ export function BadgesPage() {
       </div>
 
       {/* Leaderboard */}
-      <div className="bg-white border border-neutral-200 rounded-xl p-6">
+      {/* <div className="bg-white border border-neutral-200 rounded-xl p-6">
         <h2 className="text-neutral-900 mb-6 flex items-center gap-2">
           <Award className="w-6 h-6 text-blue-600" />
           Global Leaderboard
@@ -164,15 +353,14 @@ export function BadgesPage() {
               key={contributor.name}
               className="flex items-center gap-4 p-4 bg-neutral-50 rounded-lg hover:bg-neutral-100 transition-colors"
             >
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                index === 0
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${index === 0
                   ? 'bg-yellow-100 text-yellow-700'
                   : index === 1
-                  ? 'bg-gray-100 text-gray-700'
-                  : index === 2
-                  ? 'bg-orange-100 text-orange-700'
-                  : 'bg-neutral-200 text-neutral-700'
-              }`}>
+                    ? 'bg-gray-100 text-gray-700'
+                    : index === 2
+                      ? 'bg-orange-100 text-orange-700'
+                      : 'bg-neutral-200 text-neutral-700'
+                }`}>
                 {index + 1}
               </div>
               <img
@@ -193,12 +381,12 @@ export function BadgesPage() {
             </div>
           ))}
         </div>
-      </div>
+      </div> */}
 
       {/* Badge Unlock Modal */}
       {showUnlockModal && (
         <BadgeUnlockModal
-          badge={unlockedBadges[unlockedBadges.length - 1]}
+          badge={selectedBadge}
           onClose={() => setShowUnlockModal(false)}
         />
       )}

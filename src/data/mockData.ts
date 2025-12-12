@@ -160,42 +160,38 @@ export const mockAppreciations: Appreciation[] = [
   },
 ];
 
-export const mockBadges: Badge[] = [
+export const mockBadges = [
   {
     id: '1',
-    name: 'Starter',
+    name: 'Rising Star',
     description: 'Welcome to the team! Awarded on your first day.',
-    icon: '🌱',
     tier: 1,
-    pointsRequired: 0,
+    pointsRequired: 50,
     unlocked: true,
     unlockedDate: '2024-01-15',
   },
   {
     id: '2',
-    name: 'Active',
+    name: 'Achiever',
     description: 'Actively participating in peer recognition.',
-    icon: '⭐',
     tier: 2,
-    pointsRequired: 50,
+    pointsRequired: 100,
     unlocked: true,
     unlockedDate: '2024-03-20',
   },
   {
     id: '3',
-    name: 'Achiever',
+    name: 'Performer',
     description: 'Completed 5 significant achievements.',
-    icon: '🎯',
     tier: 3,
-    pointsRequired: 100,
+    pointsRequired: 150,
     unlocked: true,
     unlockedDate: '2024-06-10',
   },
   {
     id: '4',
-    name: 'Performer',
+    name: 'Innovator',
     description: 'Consistently delivering excellent work.',
-    icon: '🚀',
     tier: 4,
     pointsRequired: 200,
     unlocked: true,
@@ -203,27 +199,16 @@ export const mockBadges: Badge[] = [
   },
   {
     id: '5',
-    name: 'Champion',
+    name: 'Trailblazer',
     description: 'A leader in peer appreciation and achievement.',
-    icon: '🏆',
     tier: 5,
-    pointsRequired: 300,
-    unlocked: false,
-  },
-  {
-    id: '6',
-    name: 'Leader',
-    description: 'Inspiring and mentoring others.',
-    icon: '👑',
-    tier: 6,
     pointsRequired: 500,
     unlocked: false,
   },
   {
-    id: '7',
+    id: '6',
     name: 'Legend',
     description: 'The ultimate recognition master.',
-    icon: '💎',
     tier: 7,
     pointsRequired: 1000,
     unlocked: false,
@@ -284,12 +269,12 @@ export const monthlyData = [
 ];
 
 export const departmentStats: DepartmentStats[] = [
-  { department: 'Engineering', recognitions: 145, points: 7250, employees: 45 },
-  { department: 'Product', recognitions: 98, points: 4900, employees: 28 },
-  { department: 'Sales', recognitions: 112, points: 5600, employees: 35 },
-  { department: 'Marketing', recognitions: 87, points: 4350, employees: 22 },
-  { department: 'Support', recognitions: 103, points: 5150, employees: 30 },
-  { department: 'HR', recognitions: 56, points: 2800, employees: 15 },
+  { department: 'Suresh Gupta', recognitions: 145, points: 7250, employees: 45 },
+  { department: 'Sumit Singh', recognitions: 98, points: 4900, employees: 28 },
+  { department: 'Vinay Singh', recognitions: 112, points: 5600, employees: 35 },
+  { department: 'Sushant Singh', recognitions: 87, points: 4350, employees: 22 },
+  { department: 'Manoj Sahu', recognitions: 103, points: 5150, employees: 30 },
+  { department: 'Mahesh Yadav', recognitions: 56, points: 2800, employees: 15 },
 ];
 
 export const topContributors = [

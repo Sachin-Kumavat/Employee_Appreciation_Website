@@ -1,94 +1,135 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Download, Calendar, Filter } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { monthlyData, departmentStats } from '../data/mockData';
 import { Button } from '../components/ui/Button';
+import LeaderboardWidget from './LeaderboardWidget';
+import apiRequest from '../utils/ApiService';
 
-export function AdminDashboardPage() {
+interface AdminDashboardPage {
+  darkMode: boolean;
+}
+export function AdminDashboardPage({ darkMode }: AdminDashboardPage) {
+  const [summary, setSummary] = useState({
+    total_employees: 0,
+    total_recognitions: 0,
+    total_pending_approvals: 0
+  });
+  const [employees, setEmployees] = useState([]);
   const [dateRange, setDateRange] = useState('30');
   const [selectedDepartment, setSelectedDepartment] = useState('all');
 
   const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
+
+  // const fetchEmployeePerformance = async () => {
+  //   try {
+  //     const res = await apiRequest({
+  //       method: "POST",
+  //       url: "/admin/employee-performance"   // <— Use your real API path
+  //     });
+
+  //     setSummary(res.data.summary);
+  //     setEmployees(res.data.data);
+  //   } catch (error) {
+  //     console.log("API Error", error);
+  //   }
+  // };
+
+
+
+  const stats = [
+    {
+      title: 'Total Recognitions',
+      value: '542',
+      subText: '↑ 12% from last month',
+      subTextColor: 'text-green-600',
+    },
+    {
+      title: 'Active Users',
+      value: '175',
+      subText: '↑ 8% from last month',
+      subTextColor: 'text-green-600',
+    },
+    {
+      title: 'Pending Approvals',
+      value: '23',
+      subText: '6 urgent',
+      subTextColor: 'text-orange-600',
+    },
+    {
+      title: 'Avg Response Time',
+      value: '2.3h',
+      subText: '↓ 15% from last month',
+      subTextColor: 'text-green-600',
+    }
+  ]
+
+  const topContributors = [
+    {
+      name: 'Sarah Johnson',
+      avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
+      recognitions: 32,
+    },
+    {
+      name: 'Mike Chen',
+      avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
+      recognitions: 28,
+    },
+    {
+      name: 'Emily Davis',
+      avatar: 'https://randomuser.me/api/portraits/men/65.jpg',
+      recognitions: 25,
+    },
+    {
+      name: 'Mike Chen',
+      avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
+      recognitions: 28,
+    },
+  ];
+
+  const getEmployeePerformance = async () => {
+    try {
+      const response = await apiRequest()
+    } catch (error: any) {
+
+    }
+  }
+
+  useEffect(() => {
+    getEmployeePerformance();
+  }, [])
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-neutral-900">Admin Analytics Dashboard</h1>
-          <p className="text-neutral-600 mt-1">
+          <h1 className={`${darkMode ? 'text-white text-3xl ' : 'text-neutral-900 text-3xl'}`}>Admin Dashboard</h1>
+          <p className={`text-neutral-600 mt-1`}>
             Comprehensive insights and data visualization
           </p>
         </div>
-        <Button
-          variant="outline"
-          icon={<Download className="w-5 h-5" />}
-        >
-          Export Report
-        </Button>
-      </div>
 
-      {/* Filters */}
-      <div className="bg-white border border-neutral-200 rounded-xl p-4">
-        <div className="flex flex-wrap gap-4 items-center">
-          <div className="flex items-center gap-2">
-            <Filter className="w-5 h-5 text-neutral-600" />
-            <span className="text-neutral-700">Filters:</span>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-neutral-600" />
-            <select
-              value={dateRange}
-              onChange={(e) => setDateRange(e.target.value)}
-              className="px-3 py-2 border border-neutral-300 rounded-lg bg-white text-neutral-900"
-            >
-              <option value="7">Last 7 Days</option>
-              <option value="30">Last 30 Days</option>
-              <option value="90">Last 90 Days</option>
-              <option value="365">Last Year</option>
-            </select>
-          </div>
-
-          <select
-            value={selectedDepartment}
-            onChange={(e) => setSelectedDepartment(e.target.value)}
-            className="px-3 py-2 border border-neutral-300 rounded-lg bg-white text-neutral-900"
-          >
-            <option value="all">All Departments</option>
-            <option value="Engineering">Engineering</option>
-            <option value="Product">Product</option>
-            <option value="Sales">Sales</option>
-            <option value="Marketing">Marketing</option>
-            <option value="Support">Support</option>
-            <option value="HR">HR</option>
-          </select>
-        </div>
       </div>
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white border border-neutral-200 rounded-xl p-6">
-          <p className="text-neutral-600 mb-2">Total Recognitions</p>
-          <p className="text-3xl text-neutral-900 mb-1">542</p>
-          <p className="text-sm text-green-600">↑ 12% from last month</p>
-        </div>
-        <div className="bg-white border border-neutral-200 rounded-xl p-6">
-          <p className="text-neutral-600 mb-2">Active Users</p>
-          <p className="text-3xl text-neutral-900 mb-1">175</p>
-          <p className="text-sm text-green-600">↑ 8% from last month</p>
-        </div>
-        <div className="bg-white border border-neutral-200 rounded-xl p-6">
-          <p className="text-neutral-600 mb-2">Pending Approvals</p>
-          <p className="text-3xl text-neutral-900 mb-1">23</p>
-          <p className="text-sm text-orange-600">6 urgent</p>
-        </div>
-        <div className="bg-white border border-neutral-200 rounded-xl p-6">
-          <p className="text-neutral-600 mb-2">Avg Response Time</p>
-          <p className="text-3xl text-neutral-900 mb-1">2.3h</p>
-          <p className="text-sm text-green-600">↓ 15% from last month</p>
-        </div>
+        {stats.map((item, idx) => (
+          <div
+            key={idx}
+            className="bg-white border border-neutral-200 rounded-xl p-6"
+          >
+            <p className="text-neutral-600 mb-2">{item.title}</p>
+            <p className="text-3xl text-neutral-900 mb-1">{item.value}</p>
+            <p className={`text-sm ${item.subTextColor}`}>{item.subText}</p>
+          </div>
+        ))}
       </div>
+
+      <div>
+        <LeaderboardWidget contributors={topContributors} darkMode={darkMode} />
+      </div>
+
 
       {/* Monthly Trend Chart */}
       <div className="bg-white border border-neutral-200 rounded-xl p-6">
@@ -126,126 +167,31 @@ export function AdminDashboardPage() {
         </ResponsiveContainer>
       </div>
 
-      {/* Department Distribution */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white border border-neutral-200 rounded-xl p-6">
-          <h2 className="text-neutral-900 mb-6">Recognition by Department</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={departmentStats}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis dataKey="department" stroke="#6b7280" angle={-45} textAnchor="end" height={80} />
-              <YAxis stroke="#6b7280" />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: '#ffffff',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '8px',
-                }}
-              />
-              <Bar dataKey="recognitions" fill="#3b82f6" radius={[8, 8, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        <div className="bg-white border border-neutral-200 rounded-xl p-6">
-          <h2 className="text-neutral-900 mb-6">Points Distribution</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={departmentStats}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ department, percent }) => `${department} ${(percent * 100).toFixed(0)}%`}
-                outerRadius={100}
-                fill="#8884d8"
-                dataKey="points"
-              >
-                {departmentStats.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* Top Contributors by Department */}
-      <div className="bg-white border border-neutral-200 rounded-xl p-6">
-        <h2 className="text-neutral-900 mb-6">Department Performance</h2>
-        <div className="space-y-4">
-          {departmentStats.map((dept, index) => {
-            const avgRecognitions = (dept.recognitions / dept.employees).toFixed(1);
-            const progress = (dept.recognitions / Math.max(...departmentStats.map(d => d.recognitions))) * 100;
-            
-            return (
-              <div key={dept.department} className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                    />
-                    <span className="text-neutral-900">{dept.department}</span>
-                  </div>
-                  <div className="flex items-center gap-4 text-sm">
-                    <span className="text-neutral-600">
-                      {dept.recognitions} recognitions
-                    </span>
-                    <span className="text-neutral-600">
-                      {avgRecognitions} avg/employee
-                    </span>
-                    <span className="text-neutral-600">
-                      {dept.employees} employees
-                    </span>
-                  </div>
-                </div>
-                <div className="h-2 bg-neutral-100 rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all duration-500"
-                    style={{
-                      width: `${progress}%`,
-                      backgroundColor: COLORS[index % COLORS.length],
-                    }}
-                  />
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
 
       {/* Exportable Data Table */}
       <div className="bg-white border border-neutral-200 rounded-xl overflow-hidden">
         <div className="px-6 py-4 border-b border-neutral-200 flex items-center justify-between">
-          <h2 className="text-neutral-900">Raw Data Export</h2>
-          <Button
-            variant="secondary"
-            size="sm"
-            icon={<Download className="w-4 h-4" />}
-          >
-            Download CSV
-          </Button>
+          <h2 className="text-neutral-900">Employee History</h2>
+
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-neutral-50 border-b border-neutral-200">
               <tr>
                 <th className="text-left px-6 py-3 text-neutral-900">
-                  Department
-                </th>
-                <th className="text-left px-6 py-3 text-neutral-900">
                   Employees
                 </th>
                 <th className="text-left px-6 py-3 text-neutral-900">
-                  Recognitions
+                  Appreciation
+                </th>
+                <th className="text-left px-6 py-3 text-neutral-900">
+                  Achievements
                 </th>
                 <th className="text-left px-6 py-3 text-neutral-900">
                   Total Points
                 </th>
                 <th className="text-left px-6 py-3 text-neutral-900">
-                  Avg/Employee
+                  Current Points
                 </th>
               </tr>
             </thead>

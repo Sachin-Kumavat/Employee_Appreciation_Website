@@ -44,7 +44,19 @@ export function BadgeUnlockModal({ badge, onClose }: BadgeUnlockModalProps) {
               {/* Badge Icon with Animation */}
               <div className="mb-6 animate-bounce">
                 <div className="inline-block p-8 bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-full border-4 border-yellow-400 shadow-xl">
-                  <span className="text-7xl">{badge.icon}</span>
+                  <span className="text-7xl">{badge.name === "Rising Star"
+                    ? "🌟"
+                    : badge.name === "Achiever"
+                      ? "🏅"
+                      : badge.name === "Performer"
+                        ? "🎯"
+                        : badge.name === "Innovator"
+                          ? "💡"
+                          : badge.name === "Trailblazer"
+                            ? "🔥"
+                            : badge.name === "Legend"
+                              ? "👑"
+                              : ""}</span>
                 </div>
               </div>
 

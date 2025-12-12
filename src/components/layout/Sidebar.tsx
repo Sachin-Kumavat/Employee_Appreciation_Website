@@ -21,13 +21,14 @@ interface SidebarProps {
 export function Sidebar({ currentPage, onNavigate, isOpen, onClose, darkMode }: SidebarProps) {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'admin', label: 'Admin Dashboard', icon: BarChart3 },
     { id: 'achievements', label: 'Achievements', icon: Award },
     { id: 'add-achievement', label: 'Add Achievement', icon: Plus },
-    { id: 'manager-review', label: 'Manager Review', icon: CheckSquare },
+    { id: 'manager-review', label: 'Achievement Review', icon: CheckSquare },
+    { id: 'appreciation-review', label: 'Appreciation Review', icon: CheckSquare },
     { id: 'feed', label: 'Appreciation Feed', icon: Heart },
     { id: 'profile', label: 'My Profile', icon: User },
     { id: 'badges', label: 'Badges & Points', icon: Trophy },
-    { id: 'admin', label: 'Admin Dashboard', icon: BarChart3 },
   ];
 
   const handleNavigate = (page: string) => {

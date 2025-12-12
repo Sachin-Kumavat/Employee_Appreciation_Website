@@ -47,30 +47,30 @@ export function ManagerReviewPage({ navigateTo }: ManagerReviewPageProps) {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-neutral-900">Manager Review Queue</h1>
+        <h1 className="text-neutral-900">Achievement Review</h1>
         <p className="text-neutral-600 mt-1">
           Review and approve pending achievements
         </p>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
-          <p className="text-yellow-900 mb-1">Pending Review</p>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-4xl mx-auto">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-center">
+          <p className="text-yellow-900 mb-1">Pending</p>
           <p className="text-3xl text-yellow-900">{pendingAchievements.length}</p>
         </div>
-        <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-          <p className="text-green-900 mb-1">Approved This Month</p>
+        <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
+          <p className="text-green-900 mb-1">Approved</p>
           <p className="text-3xl text-green-900">24</p>
         </div>
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-          <p className="text-blue-900 mb-1">Avg Review Time</p>
-          <p className="text-3xl text-blue-900">2.5h</p>
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center">
+          <p className="text-blue-900 mb-1">Total</p>
+          <p className="text-3xl text-blue-900">26</p>
         </div>
       </div>
 
       {/* Filters and Actions */}
-      <div className="bg-white border border-neutral-200 rounded-xl p-4">
+      {/* <div className="bg-white border border-neutral-200 rounded-xl p-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-3">
             <Filter className="w-5 h-5 text-neutral-600" />
@@ -117,7 +117,7 @@ export function ManagerReviewPage({ navigateTo }: ManagerReviewPageProps) {
             )}
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Table */}
       <div className="bg-white border border-neutral-200 rounded-xl overflow-hidden">
@@ -125,23 +125,23 @@ export function ManagerReviewPage({ navigateTo }: ManagerReviewPageProps) {
           <table className="w-full">
             <thead className="bg-neutral-50 border-b border-neutral-200">
               <tr>
-                <th className="text-left px-6 py-3">
+                {/* <th className="text-left px-6 py-3">
                   <input
                     type="checkbox"
                     checked={selectedItems.size === filteredAchievements.length}
                     onChange={handleSelectAll}
                     className="w-4 h-4 rounded border-neutral-300 text-blue-600"
                   />
-                </th>
+                </th> */}
                 <th className="text-left px-6 py-3 text-neutral-900">
                   Employee
                 </th>
                 <th className="text-left px-6 py-3 text-neutral-900">
                   Achievement
                 </th>
-                <th className="text-left px-6 py-3 text-neutral-900">
+                {/* <th className="text-left px-6 py-3 text-neutral-900">
                   Department
-                </th>
+                </th> */}
                 <th className="text-left px-6 py-3 text-neutral-900">
                   Date
                 </th>
@@ -154,16 +154,16 @@ export function ManagerReviewPage({ navigateTo }: ManagerReviewPageProps) {
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-100">
-              {filteredAchievements.map((achievement) => (
+              {mockAchievements.map((achievement) => (
                 <tr key={achievement.id} className="hover:bg-neutral-50">
-                  <td className="px-6 py-4">
+                  {/* <td className="px-6 py-4">
                     <input
                       type="checkbox"
                       checked={selectedItems.has(achievement.id)}
                       onChange={() => handleSelectItem(achievement.id)}
                       className="w-4 h-4 rounded border-neutral-300 text-blue-600"
                     />
-                  </td>
+                  </td> */}
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <img
@@ -179,9 +179,9 @@ export function ManagerReviewPage({ navigateTo }: ManagerReviewPageProps) {
                       {achievement.title}
                     </p>
                   </td>
-                  <td className="px-6 py-4 text-neutral-600">
+                  {/* <td className="px-6 py-4 text-neutral-600">
                     {achievement.department}
-                  </td>
+                  </td> */}
                   <td className="px-6 py-4 text-neutral-600">
                     {new Date(achievement.date).toLocaleDateString()}
                   </td>

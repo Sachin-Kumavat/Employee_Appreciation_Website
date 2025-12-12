@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import Cookies from 'js-cookie';
 import { LoginPage } from './pages/LoginPage';
 import { DashboardLayout } from './components/layout/DashboardLayout';
 import { MainDashboard } from './pages/MainDashboard';
@@ -10,6 +11,8 @@ import { ProfilePage } from './pages/ProfilePage';
 import { BadgesPage } from './pages/BadgesPage';
 import { AdminDashboardPage } from './pages/AdminDashboardPage';
 import { NotificationsPage } from './pages/NotificationsPage';
+import { AdminAppreciationReview } from './pages/AdminAppreciationReview';
+import apiRequest from './utils/ApiService';
 
 type Page = 'login' | 'dashboard' | 'achievements' | 'add-achievement' | 'manager-review' | 'feed' | 'profile' | 'badges' | 'admin' | 'notifications';
 
@@ -19,12 +22,50 @@ export default function App() {
   const [darkMode, setDarkMode] = useState(false);
   const [selectedAchievementId, setSelectedAchievementId] = useState<string | null>(null);
 
-  const handleLogin = () => {
-    setIsLoggedIn(true);
-    setCurrentPage('dashboard');
+
+  useEffect(() => {
+    const token = Cookies.get('token');
+    if (token) {
+      const isEmployee = Cookies.get('isEmployee')
+      if (isEmployee) {
+        setIsLoggedIn(true);
+        setCurrentPage('dashboard');
+      } else {
+        setIsLoggedIn(true);
+        setCurrentPage('admin');
+      }
+    }
+  }, []);
+  const handleLogin = async (email: string, password: string) => {
+    console.log("email------>", email, "password-------->", password)
+    try {
+      const response = await apiRequest<{ message: string; token: string; user: { id: number; email: string; role: string } }>({
+        method: 'POST',
+        url: '/auth/login',
+        data: { email, password },
+      });
+
+      const { token, user } = response.data;
+
+      // Set token and isEmployee in cookies
+      Cookies.set('token', token, { expires: 1 }); // 1 day expiration
+      Cookies.set('isEmployee', user.role === 'employee' ? 'true' : 'false', { expires: 1 });
+
+      setIsLoggedIn(true);
+      if (user.role === 'employee') {
+        setCurrentPage('dashboard');
+      } else {
+        setCurrentPage('admin');
+      }
+    } catch (error: any) {
+      console.log("login error---------->",error)
+      alert(error.response?.data?.message || 'Login failed');
+    }
   };
 
   const handleLogout = () => {
+    Cookies.remove('token');
+    Cookies.remove('isEmployee');
     setIsLoggedIn(false);
     setCurrentPage('login');
   };
@@ -61,17 +102,19 @@ export default function App() {
       case 'badges':
         return <BadgesPage />;
       case 'admin':
-        return <AdminDashboardPage />;
+        return <AdminDashboardPage darkMode={darkMode} />;
       case 'notifications':
         return <NotificationsPage navigateTo={navigateTo} />;
+      case 'appreciation-review':
+        return <AdminAppreciationReview navigateTo={navigateTo} />;
       default:
         return <MainDashboard navigateTo={navigateTo} darkMode={darkMode} />;
     }
   };
 
   return (
-    <DashboardLayout 
-      currentPage={currentPage} 
+    <DashboardLayout
+      currentPage={currentPage}
       onNavigate={navigateTo}
       onLogout={handleLogout}
       darkMode={darkMode}
