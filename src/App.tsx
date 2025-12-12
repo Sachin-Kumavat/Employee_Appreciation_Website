@@ -13,8 +13,20 @@ import { AdminDashboardPage } from './pages/AdminDashboardPage';
 import { NotificationsPage } from './pages/NotificationsPage';
 import { AdminAppreciationReview } from './pages/AdminAppreciationReview';
 import apiRequest from './utils/ApiService';
+import { PeerAppreciationPage } from './pages/PeerAppreciation'; // new page
 
-type Page = 'login' | 'dashboard' | 'achievements' | 'add-achievement' | 'manager-review' | 'feed' | 'profile' | 'badges' | 'admin' | 'notifications';
+type Page =
+  | 'login'
+  | 'dashboard'
+  | 'achievements'
+  | 'add-achievement'
+  | 'manager-review'
+  | 'feed'
+  | 'profile'
+  | 'badges'
+  | 'admin'
+  | 'notifications'
+  | 'peer-appreciation'; // added route
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<Page>('login');
@@ -107,6 +119,8 @@ export default function App() {
         return <NotificationsPage navigateTo={navigateTo} />;
       case 'appreciation-review':
         return <AdminAppreciationReview navigateTo={navigateTo} />;
+      case 'peer-appreciation': // new route
+        return <PeerAppreciationPage navigateTo={navigateTo} />;
       default:
         return <MainDashboard navigateTo={navigateTo} darkMode={darkMode} />;
     }

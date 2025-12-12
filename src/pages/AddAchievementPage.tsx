@@ -1,34 +1,18 @@
 import { useState } from 'react';
-import { ArrowLeft, Upload, X, Info, Save, Send } from 'lucide-react';
+import { ArrowLeft, Upload, X, Send } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-import { WorkflowProgress } from '../components/achievements/WorkflowProgress';
 
 interface AddAchievementPageProps {
-  navigateTo: (page: any) => void;
-  editId?: string | null;
+  navigateTo: (page: string) => void;
 }
 
-export function AddAchievementPage({ navigateTo, editId }: AddAchievementPageProps) {
+export function AddAchievementPage({ navigateTo }: AddAchievementPageProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [date, setDate] = useState('');
-  const [tags, setTags] = useState<string[]>([]);
-  const [currentTag, setCurrentTag] = useState('');
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [status, setStatus] = useState<'draft' | 'submitted'>('draft');
   const [showSuccess, setShowSuccess] = useState(false);
-
-  const handleAddTag = () => {
-    if (currentTag.trim() && !tags.includes(currentTag.trim())) {
-      setTags([...tags, currentTag.trim()]);
-      setCurrentTag('');
-    }
-  };
-
-  const handleRemoveTag = (tagToRemove: string) => {
-    setTags(tags.filter(tag => tag !== tagToRemove));
-  };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -36,21 +20,11 @@ export function AddAchievementPage({ navigateTo, editId }: AddAchievementPagePro
     }
   };
 
-  const handleSaveDraft = () => {
-    setStatus('draft');
-    setShowSuccess(true);
-    setTimeout(() => {
-      setShowSuccess(false);
-      navigateTo('achievements');
-    }, 1500);
-  };
-
   const handleSubmit = () => {
-    setStatus('submitted');
     setShowSuccess(true);
     setTimeout(() => {
       setShowSuccess(false);
-      navigateTo('achievements');
+      navigateTo('achievements'); // Back to Achievements feed
     }, 1500);
   };
 
@@ -65,34 +39,14 @@ export function AddAchievementPage({ navigateTo, editId }: AddAchievementPagePro
           <ArrowLeft className="w-5 h-5" />
           Back to Achievements
         </button>
-        <h1 className="text-neutral-900">
-          {editId ? 'Edit Achievement' : 'Add New Achievement'}
-        </h1>
-        <p className="text-neutral-600 mt-1">
-          Document your accomplishments and milestones
-        </p>
-      </div>
-
-      {/* Workflow Progress */}
-      <WorkflowProgress currentStatus={status} />
-
-      {/* Auto-Publish Info */}
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
-        <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-        <div>
-          <h4 className="text-blue-900 mb-1">Auto-Publish Rules</h4>
-          <p className="text-blue-800 text-sm">
-            Achievements are auto-published if: (1) Type is &quot;Training Completed&quot; with no proof required, OR (2) Employee level is Junior and manager auto-approval is enabled. All other achievements require manager review.
-          </p>
-        </div>
+        <h1 className="text-neutral-900">Add New Achievement</h1>
+        <p className="text-neutral-600 mt-1">Document your accomplishments and milestones</p>
       </div>
 
       {/* Form */}
       <div className="bg-white border border-neutral-200 rounded-xl p-6 space-y-6">
         <div>
-          <label htmlFor="title" className="block text-neutral-700 mb-2">
-            Achievement Title *
-          </label>
+          <label htmlFor="title" className="block text-neutral-700 mb-2">Achievement Title *</label>
           <Input
             id="title"
             type="text"
@@ -104,9 +58,7 @@ export function AddAchievementPage({ navigateTo, editId }: AddAchievementPagePro
         </div>
 
         <div>
-          <label htmlFor="description" className="block text-neutral-700 mb-2">
-            Description *
-          </label>
+          <label htmlFor="description" className="block text-neutral-700 mb-2">Description *</label>
           <textarea
             id="description"
             value={description}
@@ -119,9 +71,7 @@ export function AddAchievementPage({ navigateTo, editId }: AddAchievementPagePro
         </div>
 
         <div>
-          <label htmlFor="date" className="block text-neutral-700 mb-2">
-            Achievement Date *
-          </label>
+          <label htmlFor="date" className="block text-neutral-700 mb-2">Achievement Date *</label>
           <Input
             id="date"
             type="date"
@@ -131,49 +81,9 @@ export function AddAchievementPage({ navigateTo, editId }: AddAchievementPagePro
           />
         </div>
 
-        {/* Tags */}
-        <div>
-          <label className="block text-neutral-700 mb-2">
-            Tags
-          </label>
-          <div className="flex gap-2 mb-3">
-            <Input
-              type="text"
-              value={currentTag}
-              onChange={(e) => setCurrentTag(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
-              placeholder="Add a tag and press Enter"
-            />
-            <Button type="button" variant="secondary" onClick={handleAddTag}>
-              Add
-            </Button>
-          </div>
-          {tags.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full"
-                >
-                  {tag}
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveTag(tag)}
-                    className="hover:text-blue-900"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-
         {/* File Upload */}
         <div>
-          <label className="block text-neutral-700 mb-2">
-            Proof (Image or PDF)
-          </label>
+          <label className="block text-neutral-700 mb-2">Proof (Image or PDF)</label>
           <div className="border-2 border-dashed border-neutral-300 rounded-xl p-8 text-center hover:border-blue-500 transition-colors">
             <input
               type="file"
@@ -190,16 +100,11 @@ export function AddAchievementPage({ navigateTo, editId }: AddAchievementPagePro
                   </div>
                   <div className="text-left">
                     <p className="text-neutral-900">{uploadedFile.name}</p>
-                    <p className="text-sm text-neutral-500">
-                      {(uploadedFile.size / 1024).toFixed(2)} KB
-                    </p>
+                    <p className="text-sm text-neutral-500">{(uploadedFile.size / 1024).toFixed(2)} KB</p>
                   </div>
                   <button
                     type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setUploadedFile(null);
-                    }}
+                    onClick={(e) => { e.preventDefault(); setUploadedFile(null); }}
                     className="ml-auto p-2 hover:bg-neutral-100 rounded-lg"
                   >
                     <X className="w-5 h-5 text-neutral-600" />
@@ -208,12 +113,8 @@ export function AddAchievementPage({ navigateTo, editId }: AddAchievementPagePro
               ) : (
                 <>
                   <Upload className="w-12 h-12 text-neutral-400 mx-auto mb-3" />
-                  <p className="text-neutral-900 mb-1">
-                    Click to upload or drag and drop
-                  </p>
-                  <p className="text-sm text-neutral-500">
-                    PNG, JPG, or PDF (max 10MB)
-                  </p>
+                  <p className="text-neutral-900 mb-1">Click to upload or drag and drop</p>
+                  <p className="text-sm text-neutral-500">PNG, JPG, or PDF (max 10MB)</p>
                 </>
               )}
             </label>
@@ -223,14 +124,6 @@ export function AddAchievementPage({ navigateTo, editId }: AddAchievementPagePro
 
       {/* Actions */}
       <div className="flex flex-col sm:flex-row gap-3">
-        <Button
-          variant="secondary"
-          icon={<Save className="w-5 h-5" />}
-          onClick={handleSaveDraft}
-          className="flex-1"
-        >
-          Save as Draft
-        </Button>
         <Button
           variant="primary"
           icon={<Send className="w-5 h-5" />}
@@ -245,9 +138,7 @@ export function AddAchievementPage({ navigateTo, editId }: AddAchievementPagePro
       {/* Success Message */}
       {showSuccess && (
         <div className="fixed bottom-6 right-6 bg-green-600 text-white px-6 py-4 rounded-lg shadow-xl animate-in slide-in-from-bottom-4 duration-300">
-          <p className="flex items-center gap-2">
-            ✓ Achievement {status === 'draft' ? 'saved as draft' : 'submitted for review'}!
-          </p>
+          <p className="flex items-center gap-2">✓ Achievement submitted for review!</p>
         </div>
       )}
     </div>
