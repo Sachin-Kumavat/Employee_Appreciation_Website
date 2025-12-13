@@ -1,6 +1,6 @@
 // src/pages/AchievementsPage.tsx
 import { useState, useEffect } from 'react';
-import { Filter, Plus, FileText, ArrowLeft, Upload, X, Send } from 'lucide-react';
+import { Filter, Plus, FileText, ArrowLeft, Upload, X, Send, ThumbsUp, MessageCircle } from 'lucide-react';
 import { Achievement } from '../types';
 import { StatusBadge } from '../components/ui/StatusBadge';
 import { Button } from '../components/ui/Button';
@@ -13,6 +13,21 @@ export function AchievementsPage() {
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [liked, setLiked] = useState(false);
+
+  // reactions state per achievement
+  const [reactionsMap, setReactionsMap] = useState<{
+    [id: number]: {
+      liked: boolean;
+      clapped: boolean;
+      like: number;
+      clap: number;
+    };
+  }>({});
+
+  const [showComments, setShowComments] = useState(false);
+  const [commentList, setCommentList] = useState<any[]>([]);
+  const [newComment, setNewComment] = useState('');
 
   // Form state
   const [title, setTitle] = useState('');
@@ -26,6 +41,7 @@ export function AchievementsPage() {
   const [employee, setEmployee] = useState<{ id: number; name: string; total_points: number } | null>(null);
 
   const email = Cookies.get("userEmail");
+  const empId = Cookies.get("empId")
   const filteredAchievements = achievements.filter(a => a.status === filter);
 
   const fetchAchievements = async () => {
@@ -41,6 +57,16 @@ export function AchievementsPage() {
       if (data) {
         setEmployee(data.employee || null);
         setAchievements(data.achievements || []);
+        const reactionState: any = {};
+        (data.achievements || []).forEach((a: Achievement) => {
+          reactionState[a.id] = {
+            liked: false,
+            clapped: false,
+            like: a.reactions?.like ?? 0,
+            clap: a.reactions?.clap ?? 0,
+          };
+        });
+        setReactionsMap(reactionState);
       }
     } catch (err) {
       console.error('Failed to fetch achievements:', err);
@@ -53,6 +79,58 @@ export function AchievementsPage() {
   useEffect(() => {
     fetchAchievements();
   }, [email]);
+
+  const handleLike = async (id: number) => {
+    try {
+      const res = await apiRequest({
+        method: 'POST',
+        url: '/reaction/add',
+        data: { type: 'like', module: 'achievement', module_id: id, user_id: Number(empId) }
+      })
+      console.log("res of add like----->", res)
+      fetchAchievements()
+
+    } catch (error) {
+      console.log("error of add like----->", error)
+    }
+    // setReactionsMap(prev => {
+    //   const current = prev[id];
+    //   return {
+    //     ...prev,
+    //     [id]: {
+    //       ...current,
+    //       liked: !current.liked,
+    //       like: current.like + (current.liked ? -1 : 1),
+    //     },
+    //   };
+    // });
+  };
+
+  const handleClap = async (id: number) => {
+    try {
+      const res = await apiRequest({
+        method: 'POST',
+        url: '/reaction/add',
+        data: { type: 'clap', module: 'achievement', module_id: id, user_id: Number(empId) }
+      })
+      console.log("res of add like----->", res)
+      fetchAchievements()
+
+    } catch (error) {
+      console.log("error of add like----->", error)
+    }
+    // setReactionsMap(prev => {
+    //   const current = prev[id];
+    //   return {
+    //     ...prev,
+    //     [id]: {
+    //       ...current,
+    //       clapped: !current.clapped,
+    //       clap: current.clap + (current.clapped ? -1 : 1),
+    //     },
+    //   };
+    // });
+  };
 
   const handleSubmit = async () => {
     if (!title || !description || !date) return;
@@ -252,10 +330,48 @@ export function AchievementsPage() {
               </div>
             </div>
 
-            {/* Footer */}
-            <div className="text-sm text-neutral-600 mt-2 border-t border-neutral-200 pt-2">
-              {new Date(achievement.achievement_date).toLocaleDateString()}
+            {/* Reactions */}
+            <div className="flex items-center gap-4 border-t pt-3 text-sm">
+              <button
+                onClick={() => handleLike(achievement.id)}
+                className={`px-3 py-1.5 rounded-full flex items-center gap-1 ${reactionsMap[achievement.id]?.liked
+                  ? 'bg-blue-100 text-blue-600'
+                  : 'hover:bg-neutral-100'
+                  }`}
+              >
+                <ThumbsUp className="w-4 h-4" />
+                {reactionsMap[achievement.id]?.like ?? 0}
+              </button>
+
+              <button
+                onClick={() => handleClap(achievement.id)}
+                className={`px-3 py-1.5 rounded-full ${reactionsMap[achievement.id]?.clapped
+                  ? 'bg-green-100 text-green-600'
+                  : 'hover:bg-neutral-100'
+                  }`}
+              >
+                👏 {reactionsMap[achievement.id]?.clap ?? 0}
+              </button>
+
+              <span className="ml-auto text-neutral-500">
+                {new Date(achievement.achievement_date ? achievement.achievement_date : achievement.createdAt).toLocaleDateString()}
+              </span>
             </div>
+
+
+            {/* Footer */}
+            <button
+              onClick={() => setShowComments(prev => !prev)}
+              className={`
+              flex items-center gap-1.5 mb-3 text-sm text-neutral-600 hover:text-neutral-900`}
+            >
+              <MessageCircle className="w-4 h-4" />
+              {commentList.length} comments
+            </button>
+            
+            {/* <div className="text-sm text-neutral-600 mt-2 border-t border-neutral-200 pt-2">
+              {new Date(achievement.achievement_date).toLocaleDateString()}
+            </div> */}
           </div>
         ))}
       </div>

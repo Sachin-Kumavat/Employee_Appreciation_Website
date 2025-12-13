@@ -1,5 +1,7 @@
 import { Trophy } from 'lucide-react';
-import { topContributors } from '../../data/mockData';
+// import { topContributors } from '../../data/mockData';
+import { useEffect, useState } from 'react';
+import apiRequest from '../../utils/ApiService';
 
 interface LeaderboardWidgetProps {
   darkMode?: boolean;
@@ -7,6 +9,25 @@ interface LeaderboardWidgetProps {
 }
 
 export function LeaderboardWidget({ darkMode, navigateTo }: LeaderboardWidgetProps) {
+
+  const [topContributors, setTopContributors] = useState([]);
+
+  const getEmpTopContributors=async()=>{
+    try {
+      const res = await apiRequest({
+        method:'POST',
+        url: '/spotlight/topEmployee'
+      })
+      setTopContributors(res?.data?.data)
+      console.log("res in emp top contributor------->", res?.data?.data)
+    } catch (error) {
+      console.log("error in emp top contributor------->", error)
+    }
+  }
+
+  useEffect(()=>{
+    getEmpTopContributors()
+  },[])
   return (
     <div className={`${
       darkMode ? 'bg-neutral-800 border-neutral-700' : 'bg-white border-neutral-200'
@@ -24,7 +45,6 @@ export function LeaderboardWidget({ darkMode, navigateTo }: LeaderboardWidgetPro
             className={`flex items-center gap-3 p-3 rounded-lg ${
               darkMode ? 'hover:bg-neutral-700' : 'hover:bg-neutral-50'
             } transition-colors cursor-pointer`}
-            onClick={() => navigateTo('profile')}
           >
             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${
               index === 0
@@ -40,7 +60,7 @@ export function LeaderboardWidget({ darkMode, navigateTo }: LeaderboardWidgetPro
               {index + 1}
             </div>
             <img
-              src={contributor.avatar}
+              src={contributor.avatar_url}
               alt={contributor.name}
               className="w-10 h-10 rounded-full"
             />
@@ -49,7 +69,7 @@ export function LeaderboardWidget({ darkMode, navigateTo }: LeaderboardWidgetPro
                 {contributor.name}
               </p>
               <p className={`text-sm ${darkMode ? 'text-neutral-400' : 'text-neutral-500'}`}>
-                {contributor.recognitions} recognitions
+                {contributor.recognition_count} recognitions
               </p>
             </div>
           </div>

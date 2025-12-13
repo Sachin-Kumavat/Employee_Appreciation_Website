@@ -72,6 +72,7 @@ export default function App() {
       Cookies.set('isEmployee', user.role === 'employee' ? 'true' : 'false', { expires: 1 });
       Cookies.set('userEmail', user.email)
       Cookies.set('userName', empDetails?.data?.employee?.name)
+      Cookies.set('empId', empDetails?.data?.employee?.id)
       Cookies.set('avatar', empDetails?.data?.employee?.avatar_url)
       Cookies.set('roleTitle', empDetails?.data?.employee?.role_title)
 

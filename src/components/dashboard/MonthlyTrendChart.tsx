@@ -1,11 +1,37 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { monthlyData } from '../../data/mockData';
+// import { monthlyData } from '../../data/mockData';
+import { useEffect, useState } from 'react';
+import apiRequest from '../../utils/ApiService';
+import Cookies from 'js-cookie';
 
 interface MonthlyTrendChartProps {
   darkMode?: boolean;
 }
 
 export function MonthlyTrendChart({ darkMode }: MonthlyTrendChartProps) {
+
+  const [monthlyData, setMonthlyData] = useState([]);
+
+  const userEmail = Cookies.get("userEmail")
+
+  const getEmpDashboardDetails=async()=>{
+    try {
+      
+      const res = await apiRequest({
+        method: 'POST',
+        url: '/spotlight/empDashboard',
+        data: {email: userEmail}
+      })
+  
+      console.log("res of emp dashboard---------->", res?.data)
+      setMonthlyData(res?.data?.report?.monthlyData)
+    } catch (error) {
+      console.log("error of emp dashboard---------->", error)
+    }
+  }
+  useEffect(()=>{
+    getEmpDashboardDetails()
+  },[])
   return (
     <div className={`${
       darkMode ? 'bg-neutral-800 border-neutral-700' : 'bg-white border-neutral-200'

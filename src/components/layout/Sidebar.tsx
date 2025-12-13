@@ -26,12 +26,12 @@ export function Sidebar({ currentPage, onNavigate, isOpen, onClose, darkMode }: 
   const menuItems = isEmployee
     ? [
       { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-      { id: 'achievements', label: 'Achievements', icon: Award },
-      // { id: 'add-achievement', label: 'Add Achievement', icon: Plus },
-      { id: 'peer-appreciation', label: 'Peer Appreciation', icon: Users },
       { id: 'feed', label: 'Spotlight Feed', icon: Heart },
-      { id: 'profile', label: 'My Profile', icon: User },
+      { id: 'achievements', label: 'Achievements', icon: Award },
+      { id: 'peer-appreciation', label: 'Peer Appreciation', icon: Users },
       { id: 'badges', label: 'Badges & Points', icon: Trophy },
+      // { id: 'add-achievement', label: 'Add Achievement', icon: Plus },
+      // { id: 'profile', label: 'My Profile', icon: User },
     ]
     : [
       { id: 'admin', label: 'Admin Dashboard', icon: BarChart3 },

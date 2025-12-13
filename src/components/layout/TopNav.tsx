@@ -177,7 +177,7 @@ export function TopNav({ onMenuClick, onNavigate, onLogout, darkMode, onToggleDa
                     {userEmail}
                   </p>
                 </div>
-                <button
+                {/* <button
                   onClick={() => onNavigate('profile')}
                   className={`w-full flex items-center gap-3 px-4 py-2.5 ${
                     darkMode ? 'hover:bg-neutral-700 text-neutral-300' : 'hover:bg-neutral-50 text-neutral-700'
@@ -185,7 +185,7 @@ export function TopNav({ onMenuClick, onNavigate, onLogout, darkMode, onToggleDa
                 >
                   <User className="w-4 h-4" />
                   <span>My Profile</span>
-                </button>
+                </button> */}
                 <button
                   className={`w-full flex items-center gap-3 px-4 py-2.5 ${
                     darkMode ? 'hover:bg-neutral-700 text-neutral-300' : 'hover:bg-neutral-50 text-neutral-700'

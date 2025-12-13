@@ -7,8 +7,9 @@ import { LeaderboardWidget } from '../components/dashboard/LeaderboardWidget';
 import { MonthlyTrendChart } from '../components/dashboard/MonthlyTrendChart';
 import { FloatingActionButton } from '../components/ui/FloatingActionButton';
 import { mockAchievements, mockAppreciations, currentUser } from '../data/mockData';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
+import apiRequest from '../utils/ApiService';
 
 interface MainDashboardProps {
   navigateTo: (page: any) => void;
@@ -18,9 +19,38 @@ interface MainDashboardProps {
 export function MainDashboard({ navigateTo, darkMode }: MainDashboardProps) {
   const [showMobileAppreciate, setShowMobileAppreciate] = useState(false);
   const totalRecognitions = currentUser.recognitionsReceived + currentUser.recognitionsGiven;
-  const pendingApprovals = mockAchievements.filter(a => a.status === 'pending').length;
+  // const pendingApprovals = mockAchievements.filter(a => a.status === 'pending').length;
 
   const EmployeeName = Cookies.get("userName")
+
+
+  const [totalRecognition, setTotalRecognition] = useState(0);
+  const [pendingApprovals, setPendingApprovals] = useState(0);
+  const [userPoints, setUserPoints] = useState(0);
+  const [totalBadges, setTotalBadges] = useState(0);
+
+  const userEmail = Cookies.get("userEmail")
+
+  const getEmpDashboardDetails = async () => {
+    try {
+
+      const res = await apiRequest({
+        method: 'POST',
+        url: '/spotlight/empDashboard',
+        data: { email: userEmail }
+      })
+
+      setTotalRecognition(res?.data?.summary?.total_recognitions)
+      setPendingApprovals(res?.data?.summary?.pending_for_approval)
+      setUserPoints(res?.data?.summary?.total_points)
+      setTotalBadges(res?.data?.summary?.badges_held_count)
+    } catch (error) {
+      console.log("error of emp dashboard---------->", error)
+    }
+  }
+  useEffect(() => {
+    getEmpDashboardDetails()
+  }, [])
 
   return (
     <div className="space-y-6">
@@ -38,9 +68,9 @@ export function MainDashboard({ navigateTo, darkMode }: MainDashboardProps) {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <StatCard
           title="Total Recognitions"
-          value={totalRecognitions}
+          value={totalRecognition}
           icon={<Award className="w-6 h-6" />}
-          trend={{ value: 12, isPositive: true }}
+          // trend={{ value: 12, isPositive: true }}
           color="blue"
           darkMode={darkMode}
         />
@@ -50,19 +80,18 @@ export function MainDashboard({ navigateTo, darkMode }: MainDashboardProps) {
           icon={<CheckCircle className="w-6 h-6" />}
           color="orange"
           darkMode={darkMode}
-          onClick={() => navigateTo('manager-review')}
         />
         <StatCard
           title="Your Points"
-          value={currentUser.points}
+          value={userPoints}
           icon={<TrendingUp className="w-6 h-6" />}
-          trend={{ value: 8, isPositive: true }}
+          // trend={{ value: 8, isPositive: true }}
           color="green"
           darkMode={darkMode}
         />
         <StatCard
           title="Total Badges"
-          value={45}
+          value={totalBadges}
           icon={<Trophy className="w-6 h-6" />}
           color="purple"
           darkMode={darkMode}
@@ -77,25 +106,25 @@ export function MainDashboard({ navigateTo, darkMode }: MainDashboardProps) {
       </div>
 
       {/* Recent Achievements and Quick Appreciate */}
-      <div>
-        <div>
+      {/* <div> */}
+      {/* <div>
           <RecentAchievements
             achievements={mockAchievements.slice(0, 4)}
             navigateTo={navigateTo}
             darkMode={darkMode}
           />
-        </div>
-        {/* <div className="hidden lg:block">
+        </div> */}
+      {/* <div className="hidden lg:block">
           <QuickAppreciate darkMode={darkMode} />
         </div> */}
-      </div>
+      {/* </div> */}
 
       {/* Appreciation Feed */}
-      <AppreciationFeedWidget
+      {/* <AppreciationFeedWidget
         appreciations={mockAppreciations.slice(0, 3)}
         navigateTo={navigateTo}
         darkMode={darkMode}
-      />
+      /> */}
 
       {/* Mobile Quick Appreciate FAB */}
       <FloatingActionButton onClick={() => setShowMobileAppreciate(true)} />
