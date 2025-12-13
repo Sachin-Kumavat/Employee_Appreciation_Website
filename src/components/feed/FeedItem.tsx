@@ -31,8 +31,8 @@ export function FeedItem({
   const [liked, setLiked] = useState(false);
   const [clapped, setClapped] = useState(false);
   const [reactions, setReactions] = useState({
-    like: data.reactions.like,
-    clap: data.reactions.clap,
+    like: 0 ,
+    clap: 0,
   });
 
   const [showComments, setShowComments] = useState(false);
