@@ -57,7 +57,7 @@ export function MainDashboard({ navigateTo, darkMode }: MainDashboardProps) {
       {/* Header */}
       <div>
         <h1 className={darkMode ? 'text-white' : 'text-neutral-900'}>
-          Welcome back, {EmployeeName.split(' ')[0]}! 👋
+          Welcome back, {EmployeeName?.split(' ')[0]}! 👋
         </h1>
         <p className={`${darkMode ? 'text-neutral-400' : 'text-neutral-600'} mt-1`}>
           Here&apos;s what&apos;s happening with your team today

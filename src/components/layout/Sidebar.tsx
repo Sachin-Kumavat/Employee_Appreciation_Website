@@ -29,6 +29,7 @@ export function Sidebar({ currentPage, onNavigate, isOpen, onClose, darkMode }: 
       { id: 'feed', label: 'Spotlight Feed', icon: Heart },
       { id: 'achievements', label: 'Achievements', icon: Award },
       { id: 'peer-appreciation', label: 'Peer Appreciation', icon: Users },
+      // { id: 'profile', label: 'My Profile', icon: User },
       { id: 'badges', label: 'Badges & Points', icon: Trophy },
       // { id: 'add-achievement', label: 'Add Achievement', icon: Plus },
       // { id: 'profile', label: 'My Profile', icon: User },

@@ -122,8 +122,8 @@ export default function App() {
         return <ManagerReviewPage navigateTo={navigateTo} />;
       case 'feed':
         return <FeedPage darkMode={darkMode} />;
-      case 'profile':
-        return <ProfilePage />;
+      // case 'profile':
+      //   return <ProfilePage />;
       case 'badges':
         return <BadgesPage />;
       case 'admin':
