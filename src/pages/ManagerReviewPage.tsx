@@ -112,7 +112,7 @@ export function ManagerReviewPage({ navigateTo }: ManagerReviewPageProps) {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-4xl mx-auto">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-4xl max-w-4xl">
         <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-center">
           <p className="text-yellow-900 mb-1">Pending</p>
           <p className="text-3xl text-yellow-900">{stats.pending}</p>
