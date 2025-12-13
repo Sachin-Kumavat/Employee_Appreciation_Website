@@ -10,15 +10,14 @@ interface RecentAchievementsProps {
 
 export function RecentAchievements({ achievements, navigateTo, darkMode }: RecentAchievementsProps) {
   return (
-    <div className={`${
-      darkMode ? 'bg-neutral-800 border-neutral-700' : 'bg-white border-neutral-200'
-    } border rounded-xl p-6 shadow-sm`}>
+    <div className={`${darkMode ? 'bg-neutral-800 border-neutral-700' : 'bg-white border-neutral-200'
+      } border rounded-xl p-6 shadow-sm`}>
       <div className="flex items-center justify-between mb-4">
         <h3 className={darkMode ? 'text-white' : 'text-neutral-900'}>
           Recent Achievements
         </h3>
         <button
-          onClick={() => navigateTo('achievements')}
+          onClick={() => navigateTo('feed')}
           className="text-blue-600 hover:text-blue-700 flex items-center gap-1 transition-colors"
         >
           View All
@@ -29,11 +28,10 @@ export function RecentAchievements({ achievements, navigateTo, darkMode }: Recen
         {achievements.map((achievement) => (
           <div
             key={achievement.id}
-            className={`p-4 rounded-lg border ${
-              darkMode 
-                ? 'border-neutral-700 hover:bg-neutral-700' 
+            className={`p-4 rounded-lg border ${darkMode
+                ? 'border-neutral-700 hover:bg-neutral-700'
                 : 'border-neutral-100 hover:bg-neutral-50'
-            } transition-colors cursor-pointer`}
+              } transition-colors cursor-pointer`}
             onClick={() => navigateTo('achievements')}
           >
             <div className="flex items-start gap-3">

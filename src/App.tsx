@@ -82,6 +82,7 @@ export default function App() {
         setCurrentPage('admin');
       }
     } catch (error: any) {
+      console.log("login error---------->", error)
       alert(error.response?.data?.message || 'Login failed');
     }
   };

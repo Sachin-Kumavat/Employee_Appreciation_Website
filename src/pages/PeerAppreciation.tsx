@@ -1,16 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Filter, Plus, Send, ArrowLeft } from 'lucide-react';
-import { mockAchievements } from '../data/mockData';
-import { Achievement } from '../types';
 import { Button } from '../components/ui/Button';
 import { FeedItem } from '../components/feed/FeedItem';
 import Select from 'react-select';
+import apiRequest from '../utils/ApiService';
+import Cookies from 'js-cookie';
+import { toast } from 'react-hot-toast';
+import ToggleTabs from '../components/achievements/ToggleTabs';
 
 interface Appreciation {
   id: string;
   message: string;
   from: string;
   date: string;
+  status: 'pending' | 'approved';
+  image_url?: string;
+  receiver_names?: string[];
 }
 
 interface PeerAppreciationPageProps {
@@ -19,46 +24,150 @@ interface PeerAppreciationPageProps {
 }
 
 export function PeerAppreciationPage({ darkMode }: PeerAppreciationPageProps) {
+
+  const [tab, setTab] = useState<"received" | "sent">("received");
+
   const [filter, setFilter] = useState<'pending' | 'approved'>('pending');
-  const [achievements] = useState<Achievement[]>(mockAchievements);
-
   const [showFormPage, setShowFormPage] = useState(false);
-
-  // NEW — Multi-select state
   const [selectedEmployees, setSelectedEmployees] = useState<any[]>([]);
   const [message, setMessage] = useState('');
+  const [employeeOptions, setEmployeeOptions] = useState<any[]>([]);
+  const [loadingEmployees, setLoadingEmployees] = useState(false);
 
-  const filteredAchievements = achievements.filter(a => a.status === filter);
+  const [sentAppreciations, setSentAppreciations] = useState<Appreciation[]>([]);
+  const [receivedAppreciations, setReceivedAppreciations] = useState<Appreciation[]>([]);
 
-  const appreciations: Appreciation[] = [
-    { id: '1', message: 'Great teamwork on the Q3 project!', from: 'Alice Johnson', date: '2025-11-10' },
-    { id: '2', message: 'Thanks for your help during the client presentation.', from: 'Bob Smith', date: '2025-11-12' },
-    { id: '3', message: 'Appreciate your quick response to the issue.', from: 'Charlie Brown', date: '2025-11-15' }
-  ];
+  const email = Cookies.get("userEmail");
 
-  const employees = [
-    'Sarah Johnson - Product Manager',
-    'David Lee - UX Designer',
-    'James Carter - DevOps Engineer'
-  ];
+  // -------------------------------------------------------
+  // FETCH SENT + RECEIVED APPRECIATIONS
+  // -------------------------------------------------------
+  useEffect(() => {
+    if (!email) return;
 
-  // Convert employees → react-select option format
-  const employeeOptions = employees.map((emp) => ({
-    label: emp,
-    value: emp
-  }));
+    const fetchData = async () => {
+      try {
+        const response = await apiRequest({
+          url: '/Peerappreciation/send/appreciation',
+          method: 'POST',
+          data: { email },
+        });
 
-  const handleSubmit = () => {
+        const sentData = response.data?.sent || [];
+        const receivedData = response.data?.received || [];
+
+        // FORMAT SENT DATA
+        const sentFormatted: Appreciation[] = sentData.map((item: any) => ({
+          id: item.id.toString(),
+          message: item.message,
+          from: item.sender_name,
+          date: new Date(item.createdAt).toISOString(),
+          status: item.status,
+          image_url: item.image_url,
+          receiver_names: item.receiver_names
+        }));
+
+        // FORMAT RECEIVED DATA
+        const receivedFormatted: Appreciation[] = receivedData.map((item: any) => ({
+          id: item.id.toString(),
+          message: item.message,
+          from: item.sender_name,
+          date: new Date(item.createdAt).toISOString(),
+          status: item.status,
+          image_url: item.image_url,
+          receiver_names: item.receiver_names
+        }));
+
+        setSentAppreciations(sentFormatted);
+        setReceivedAppreciations(receivedFormatted);
+
+      } catch (err) {
+        console.error("Error fetching appreciations", err);
+      }
+    };
+
+    fetchData();
+  }, [email]);
+
+  // -------------------------------------------------------
+  // FETCH EMPLOYEES
+  // -------------------------------------------------------
+  useEffect(() => {
+    if (!email) return;
+
+    const fetchEmployees = async () => {
+      setLoadingEmployees(true);
+      try {
+        const response = await apiRequest({
+          url: '/Peerappreciation/similaremployee',
+          method: 'POST',
+          data: { email }
+        });
+
+        const data = response.data?.data || [];
+        setEmployeeOptions(
+          data.map((emp: any) => ({
+            value: emp.id,
+            label: emp.name
+          }))
+        );
+      } catch (err) {
+        console.error("Error fetching employee list", err);
+      } finally {
+        setLoadingEmployees(false);
+      }
+    };
+
+    fetchEmployees();
+  }, [email]);
+
+  // -------------------------------------------------------
+  // SEND APPRECIATION
+  // -------------------------------------------------------
+  const handleSubmit = async () => {
     if (selectedEmployees.length === 0 || !message.trim()) return;
 
-    console.log("New Appreciation Created:", {
-      selectedEmployees,
-      message
-    });
+    const sender_email = email || "";
+    const receiver_ids = selectedEmployees.map(e => e.value);
+    const receiver_names = selectedEmployees.map(e => e.label);
 
-    setSelectedEmployees([]);
-    setMessage('');
-    setShowFormPage(false);
+    const payload = {
+      sender_email,
+      message,
+      receiver_ids,
+      receiver_names,
+      image_url: "https://images.pexels.com/photos/1181263/pexels-photo-1181263.jpeg"
+    };
+
+    try {
+      const response = await apiRequest({
+        url: '/Peerappreciation/create',
+        method: 'POST',
+        data: payload
+      });
+
+      toast.success("Appreciation sent!");
+
+      const newApp: Appreciation = {
+        id: response.data?.id?.toString() || Date.now().toString(),
+        message,
+        from: "You",
+        date: new Date().toISOString(),
+        status: "pending",
+        receiver_names,
+        image_url: payload.image_url
+      };
+
+      setSentAppreciations(prev => [newApp, ...prev]);
+
+      setSelectedEmployees([]);
+      setMessage('');
+      setShowFormPage(false);
+
+    } catch (err) {
+      toast.error("Failed to send appreciation");
+      console.error(err);
+    }
   };
 
   // -------------------------------------------------------
@@ -67,102 +176,108 @@ export function PeerAppreciationPage({ darkMode }: PeerAppreciationPageProps) {
   if (showFormPage) {
     return (
       <div className="space-y-6">
-
-        {/* Back button */}
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => setShowFormPage(false)}
-            className="p-2 rounded-lg hover:bg-neutral-100 transition"
-          >
+          <button onClick={() => setShowFormPage(false)} className="p-2 rounded-lg hover:bg-neutral-100 transition">
             <ArrowLeft className="w-5 h-5 text-neutral-700" />
           </button>
           <h1 className="text-neutral-900">Send Appreciation</h1>
         </div>
 
-        {/* Form card */}
-        <div
-          className={`${
-            darkMode ? 'bg-neutral-800 border-neutral-700' : 'bg-white border-neutral-200'
-          } border rounded-xl p-6 shadow-sm`}
-        >
-          <p className="text-neutral-600 mb-6">
-            Show your gratitude to a team member
-          </p>
+        <div className={`${darkMode ? "bg-neutral-800 border-neutral-700" : "bg-white border-neutral-200"} border rounded-xl p-6`}>
 
-          {/* React-Select Multi-select */}
-          <label className="block text-sm font-medium mb-2">
-            Select Employee *
-          </label>
-
+          <label className="block text-sm mb-2 font-medium">Select Employees *</label>
           <Select
             isMulti
             options={employeeOptions}
+            isLoading={loadingEmployees}
             value={selectedEmployees}
+            placeholder="Select employees"
             onChange={(val) => setSelectedEmployees(val as any)}
-            className="react-select-container"
-            classNamePrefix="react-select"
-            styles={{
-              control: (base) => ({
-                ...base,
-                backgroundColor: darkMode ? '#2d2d2d' : '#f5f5f5',
-                borderColor: '#d1d5db',
-                padding: '4px',
-              }),
-              menu: (base) => ({
-                ...base,
-                backgroundColor: darkMode ? '#2d2d2d' : '#ffffff',
-              }),
-              multiValue: (base) => ({
-                ...base,
-                backgroundColor: darkMode ? '#3f3f3f' : '#e5e7eb',
-              }),
-              multiValueLabel: (base) => ({
-                ...base,
-                color: darkMode ? '#fff' : '#000',
-              }),
-              multiValueRemove: (base) => ({
-                ...base,
-                color: darkMode ? '#fff' : '#000',
-                ':hover': {
-                  backgroundColor: darkMode ? '#555' : '#ddd'
-                }
-              })
-            }}
           />
 
-          {/* Message */}
-          <label className="block text-sm font-medium mt-6 mb-2">
-            Appreciation Message *
-          </label>
-
+          <label className="block text-sm font-medium mt-6 mb-2">Message *</label>
           <textarea
             rows={4}
-            placeholder="Write a heartfelt message of appreciation..."
+            className="w-full p-3 rounded-lg border bg-neutral-100"
+            placeholder="Write your appreciation..."
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            className="
-              w-full p-3 border border-neutral-300 rounded-lg 
-              bg-neutral-100 focus:ring-2 focus:ring-blue-500
-            "
           />
 
-          {/* Stylish Submit Button */}
-          <div className="mt-6">
-            <button
-              onClick={handleSubmit}
-              className="
-                px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl 
-                shadow-md flex items-center gap-2 transition-all
-              "
-            >
-              <Send className="w-4 h-4" />
-              Send Appreciation
-            </button>
-          </div>
+          <button onClick={handleSubmit} className="mt-6 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl flex gap-2 items-center">
+            <Send className="w-4 h-4" />
+            Send
+          </button>
+
         </div>
       </div>
     );
   }
+
+  // -------------------------------------------------------
+  // FILTER SENT LIST BY STATUS
+  // -------------------------------------------------------
+  const filteredSent = sentAppreciations.filter(app => app.status === filter);
+
+  // -------------------------------------------------------
+  // RECEIVED TAB (NO FILTER)
+  // -------------------------------------------------------
+  const receivedList = (
+    <>
+      <p className="text-neutral-600 mt-4">
+        Showing {receivedAppreciations.length} received appreciation
+      </p>
+
+      <div className="space-y-4 mt-2">
+        {receivedAppreciations.map(app => (
+          <div key={app.id} className="bg-white border border-neutral-200 rounded-xl overflow-hidden">
+            <FeedItem appreciation={app} />
+          </div>
+        ))}
+      </div>
+    </>
+  );
+
+  // -------------------------------------------------------
+  // SENT TAB (WITH FILTER)
+  // -------------------------------------------------------
+  const sentList = (
+    <>
+      <div className="bg-white border border-neutral-200 rounded-xl p-4 mt-4">
+        <div className="flex flex-wrap gap-3 items-center">
+          <Filter className="w-5 h-5 text-neutral-600" />
+          <span className="text-neutral-700">Filter:</span>
+
+          <div className="flex gap-2 flex-wrap">
+            {['pending', 'approved'].map((status) => (
+              <button
+                key={status}
+                onClick={() => setFilter(status as any)}
+                className={`px-3 py-1.5 rounded-lg text-sm ${filter === status
+                    ? "bg-blue-600 text-white"
+                    : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
+                  }`}
+              >
+                {status.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <p className="text-neutral-600 mt-4">
+        Showing {filteredSent.length} sent appreciation
+      </p>
+
+      <div className="space-y-4 mt-2">
+        {filteredSent.map((app) => (
+          <div key={app.id} className="bg-white border border-neutral-200 rounded-xl overflow-hidden">
+            <FeedItem appreciation={app} />
+          </div>
+        ))}
+      </div>
+    </>
+  );
 
   // -------------------------------------------------------
   // MAIN PAGE
@@ -170,10 +285,10 @@ export function PeerAppreciationPage({ darkMode }: PeerAppreciationPageProps) {
   return (
     <div className="space-y-6">
 
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex justify-between items-center">
         <div>
           <h1 className="text-neutral-900">Peer Appreciation</h1>
-          <p className="text-neutral-600 mt-1">Manage and track all Peer Appreciation</p>
+          <p className="text-neutral-600">Manage all peer appreciation</p>
         </div>
 
         <Button
@@ -181,66 +296,14 @@ export function PeerAppreciationPage({ darkMode }: PeerAppreciationPageProps) {
           icon={<Plus className="w-5 h-5" />}
           onClick={() => setShowFormPage(true)}
         >
-          New Peer Appreciation
+          New Appreciation
         </Button>
       </div>
 
-      {/* Filters */}
-      <div className="bg-white border border-neutral-200 rounded-xl p-4">
-        <div className="flex flex-wrap gap-3 items-center">
-          <Filter className="w-5 h-5 text-neutral-600" />
-          <span className="text-neutral-700">Filter:</span>
+      <ToggleTabs active={tab} onChange={setTab} />
 
-          <div className="flex flex-wrap gap-2">
-            {['pending', 'approved'].map((status) => (
-              <button
-                key={status}
-                onClick={() => setFilter(status as any)}
-                className={`px-3 py-1.5 rounded-lg text-sm ${
-                  filter === status
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
-                }`}
-              >
-                {status}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
+      {tab === "received" ? receivedList : sentList}
 
-      {/* Count */}
-      <p className="text-neutral-600">
-        Showing {filteredAchievements.length} peer appreciation
-        {filteredAchievements.length !== 1 ? 's' : ''}
-      </p>
-
-      {/* Feed Items */}
-      <div className="space-y-4">
-        {appreciations.map((app) => (
-          <div
-            key={app.id}
-            className={`${
-              darkMode ? 'bg-neutral-800 border-neutral-700' : 'bg-white border-neutral-200'
-            } border rounded-xl overflow-hidden`}
-          >
-            <FeedItem appreciation={app} darkMode={darkMode} />
-          </div>
-        ))}
-      </div>
-
-      {/* Load more */}
-      <div className="text-center py-6">
-        <button
-          className={`px-6 py-3 rounded-lg ${
-            darkMode
-              ? 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700 border border-neutral-700'
-              : 'bg-white text-neutral-700 hover:bg-neutral-50 border border-neutral-200'
-          }`}
-        >
-          Load More
-        </button>
-      </div>
     </div>
   );
 }
