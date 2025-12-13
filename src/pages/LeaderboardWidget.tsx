@@ -2,8 +2,8 @@ import { Trophy } from 'lucide-react';
 
 interface Contributor {
   name: string;
-  avatar: string;
-  recognitions: number;
+  avatar_url: string;
+  recognition_count: number;
 }
 
 interface LeaderboardWidgetProps {
@@ -56,7 +56,7 @@ export default function LeaderboardWidget({
           >
             {/* Smaller Image */}
             <img
-              src={contributor.avatar}
+              src={contributor.avatar_url}
               alt={contributor.name}
               className="w-12 h-12 rounded-full mb-2 object-cover"
             />
@@ -66,7 +66,7 @@ export default function LeaderboardWidget({
             </p>
 
             <p className={`text-xs ${darkMode ? "text-neutral-400" : "text-neutral-600"}`}>
-              {contributor.recognitions} recognitions
+              {contributor.recognition_count} recognitions
             </p>
           </div>
         ))}

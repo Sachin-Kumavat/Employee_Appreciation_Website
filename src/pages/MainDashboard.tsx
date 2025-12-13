@@ -1,4 +1,4 @@
-import { TrendingUp, Award, CheckCircle, Users, Trophy} from 'lucide-react';
+import { TrendingUp, Award, CheckCircle, Users, Trophy } from 'lucide-react';
 import { StatCard } from '../components/dashboard/StatCard';
 import { RecentAchievements } from '../components/dashboard/RecentAchievements';
 import { AppreciationFeedWidget } from '../components/dashboard/AppreciationFeedWidget';
@@ -8,6 +8,7 @@ import { MonthlyTrendChart } from '../components/dashboard/MonthlyTrendChart';
 import { FloatingActionButton } from '../components/ui/FloatingActionButton';
 import { mockAchievements, mockAppreciations, currentUser } from '../data/mockData';
 import { useState } from 'react';
+import Cookies from 'js-cookie';
 
 interface MainDashboardProps {
   navigateTo: (page: any) => void;
@@ -19,12 +20,14 @@ export function MainDashboard({ navigateTo, darkMode }: MainDashboardProps) {
   const totalRecognitions = currentUser.recognitionsReceived + currentUser.recognitionsGiven;
   const pendingApprovals = mockAchievements.filter(a => a.status === 'pending').length;
 
+  const EmployeeName = Cookies.get("userName")
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
         <h1 className={darkMode ? 'text-white' : 'text-neutral-900'}>
-          Welcome back, {currentUser.name.split(' ')[0]}! 👋
+          Welcome back, {EmployeeName.split(' ')[0]}! 👋
         </h1>
         <p className={`${darkMode ? 'text-neutral-400' : 'text-neutral-600'} mt-1`}>
           Here&apos;s what&apos;s happening with your team today
@@ -32,39 +35,39 @@ export function MainDashboard({ navigateTo, darkMode }: MainDashboardProps) {
       </div>
 
       {/* Stats Grid */}
-<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-  <StatCard
-    title="Total Recognitions"
-    value={totalRecognitions}
-    icon={<Award className="w-6 h-6" />}
-    trend={{ value: 12, isPositive: true }}
-    color="blue"
-    darkMode={darkMode}
-  />
-  <StatCard
-    title="Pending Approvals"
-    value={pendingApprovals}
-    icon={<CheckCircle className="w-6 h-6" />}
-    color="orange"
-    darkMode={darkMode}
-    onClick={() => navigateTo('manager-review')}
-  />
-  <StatCard
-    title="Your Points"
-    value={currentUser.points}
-    icon={<TrendingUp className="w-6 h-6" />}
-    trend={{ value: 8, isPositive: true }}
-    color="green"
-    darkMode={darkMode}
-  />
-  <StatCard
-    title="Total Badges"
-    value={45}
-    icon={<Trophy className="w-6 h-6" />}
-    color="purple"
-    darkMode={darkMode}
-  />
-</div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <StatCard
+          title="Total Recognitions"
+          value={totalRecognitions}
+          icon={<Award className="w-6 h-6" />}
+          trend={{ value: 12, isPositive: true }}
+          color="blue"
+          darkMode={darkMode}
+        />
+        <StatCard
+          title="Pending Approvals"
+          value={pendingApprovals}
+          icon={<CheckCircle className="w-6 h-6" />}
+          color="orange"
+          darkMode={darkMode}
+          onClick={() => navigateTo('manager-review')}
+        />
+        <StatCard
+          title="Your Points"
+          value={currentUser.points}
+          icon={<TrendingUp className="w-6 h-6" />}
+          trend={{ value: 8, isPositive: true }}
+          color="green"
+          darkMode={darkMode}
+        />
+        <StatCard
+          title="Total Badges"
+          value={45}
+          icon={<Trophy className="w-6 h-6" />}
+          color="purple"
+          darkMode={darkMode}
+        />
+      </div>
 
 
       {/* Charts and Leaderboard */}
@@ -76,8 +79,8 @@ export function MainDashboard({ navigateTo, darkMode }: MainDashboardProps) {
       {/* Recent Achievements and Quick Appreciate */}
       <div>
         <div>
-          <RecentAchievements 
-            achievements={mockAchievements.slice(0, 4)} 
+          <RecentAchievements
+            achievements={mockAchievements.slice(0, 4)}
             navigateTo={navigateTo}
             darkMode={darkMode}
           />
@@ -88,8 +91,8 @@ export function MainDashboard({ navigateTo, darkMode }: MainDashboardProps) {
       </div>
 
       {/* Appreciation Feed */}
-      <AppreciationFeedWidget 
-        appreciations={mockAppreciations.slice(0, 3)} 
+      <AppreciationFeedWidget
+        appreciations={mockAppreciations.slice(0, 3)}
         navigateTo={navigateTo}
         darkMode={darkMode}
       />

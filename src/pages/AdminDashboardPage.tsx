@@ -3,7 +3,7 @@ import { Download, Calendar, Filter } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { monthlyData, departmentStats } from '../data/mockData';
 import { Button } from '../components/ui/Button';
-import LeaderboardWidget from './LeaderboardWidget';
+import LeaderboardWidget, { Contributor } from './LeaderboardWidget';
 import apiRequest from '../utils/ApiService';
 
 interface AdminDashboardPage {
@@ -16,88 +16,69 @@ export function AdminDashboardPage({ darkMode }: AdminDashboardPage) {
     total_pending_approvals: 0
   });
   const [employees, setEmployees] = useState([]);
+  const [topContributors, setTopContributors] = useState<Contributor[]>([]);
   const [dateRange, setDateRange] = useState('30');
   const [selectedDepartment, setSelectedDepartment] = useState('all');
 
   const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
-  // const fetchEmployeePerformance = async () => {
-  //   try {
-  //     const res = await apiRequest({
-  //       method: "POST",
-  //       url: "/admin/employee-performance"   // <— Use your real API path
-  //     });
+  const fetchEmployeePerformance = async () => {
+    try {
+      const res = await apiRequest({
+        method: "POST",
+        url: "/spotlight/admin/employeePerformance"   // <— Use your real API path
+      });
+      console.log("res--------->", res)
 
-  //     setSummary(res.data.summary);
-  //     setEmployees(res.data.data);
-  //   } catch (error) {
-  //     console.log("API Error", error);
-  //   }
-  // };
+      setSummary(res.data.summary);
+      setEmployees(res.data.data);
+    } catch (error) {
+      console.log("API Error", error);
+    }
+  };
+
+  const getTopContributors = async () => {
+    try {
+      const res = await apiRequest({
+        method: "POST",
+        url: "/spotlight/topEmployee"
+      });
+      console.log("res of contributor------>", res.data.data)
+      setTopContributors(res.data.data)
+    } catch (error) {
+      console.log("Top contributor------>", error)
+    }
+  }
+
+  useEffect(() => {
+    fetchEmployeePerformance();
+    getTopContributors();
+  }, []);
 
 
 
   const stats = [
     {
       title: 'Total Recognitions',
-      value: '542',
+      value: summary.total_recognitions,
       subText: '↑ 12% from last month',
       subTextColor: 'text-green-600',
     },
     {
       title: 'Active Users',
-      value: '175',
+      value: summary.total_employees,
       subText: '↑ 8% from last month',
       subTextColor: 'text-green-600',
     },
     {
       title: 'Pending Approvals',
-      value: '23',
+      value: summary.total_pending_approvals,
       subText: '6 urgent',
       subTextColor: 'text-orange-600',
     },
-    {
-      title: 'Avg Response Time',
-      value: '2.3h',
-      subText: '↓ 15% from last month',
-      subTextColor: 'text-green-600',
-    }
+
   ]
 
-  const topContributors = [
-    {
-      name: 'Sarah Johnson',
-      avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-      recognitions: 32,
-    },
-    {
-      name: 'Mike Chen',
-      avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
-      recognitions: 28,
-    },
-    {
-      name: 'Emily Davis',
-      avatar: 'https://randomuser.me/api/portraits/men/65.jpg',
-      recognitions: 25,
-    },
-    {
-      name: 'Mike Chen',
-      avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
-      recognitions: 28,
-    },
-  ];
-
-  const getEmployeePerformance = async () => {
-    try {
-      const response = await apiRequest()
-    } catch (error: any) {
-
-    }
-  }
-
-  useEffect(() => {
-    getEmployeePerformance();
-  }, [])
 
   return (
     <div className="space-y-6">
@@ -191,19 +172,19 @@ export function AdminDashboardPage({ darkMode }: AdminDashboardPage) {
                   Total Points
                 </th>
                 <th className="text-left px-6 py-3 text-neutral-900">
-                  Current Points
+                  Badge
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-100">
-              {departmentStats.map((dept) => (
-                <tr key={dept.department} className="hover:bg-neutral-50">
-                  <td className="px-6 py-4 text-neutral-900">{dept.department}</td>
-                  <td className="px-6 py-4 text-neutral-600">{dept.employees}</td>
-                  <td className="px-6 py-4 text-neutral-600">{dept.recognitions}</td>
-                  <td className="px-6 py-4 text-neutral-600">{dept.points}</td>
+              {employees.map((emp: any) => (
+                <tr key={emp.id} className="hover:bg-neutral-50">
+                  <td className="px-6 py-4 text-neutral-900">{emp.name}</td>
+                  <td className="px-6 py-4 text-neutral-600">{emp.peer_appreciations_received.length}</td>
+                  <td className="px-6 py-4 text-neutral-600">{emp.achievements.length}</td>
+                  <td className="px-6 py-4 text-neutral-600">{emp.total_points}</td>
                   <td className="px-6 py-4 text-neutral-600">
-                    {(dept.recognitions / dept.employees).toFixed(1)}
+                    {emp.badges_earned.length > 0 ? emp.badges_earned[0].name : '—'}
                   </td>
                 </tr>
               ))}

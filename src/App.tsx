@@ -14,6 +14,7 @@ import { NotificationsPage } from './pages/NotificationsPage';
 import { AdminAppreciationReview } from './pages/AdminAppreciationReview';
 import apiRequest from './utils/ApiService';
 import { PeerAppreciationPage } from './pages/PeerAppreciation'; // new page
+import toast from 'react-hot-toast';
 
 type Page =
   | 'login'
@@ -38,7 +39,7 @@ export default function App() {
   useEffect(() => {
     const token = Cookies.get('token');
     if (token) {
-      const isEmployee = Cookies.get('isEmployee')
+      const isEmployee = Cookies.get("isEmployee") === "true" ? true : false;
       if (isEmployee) {
         setIsLoggedIn(true);
         setCurrentPage('dashboard');
@@ -49,7 +50,6 @@ export default function App() {
     }
   }, []);
   const handleLogin = async (email: string, password: string) => {
-    console.log("email------>", email, "password-------->", password)
     try {
       const response = await apiRequest<{ message: string; token: string; user: { id: number; email: string; role: string } }>({
         method: 'POST',
@@ -57,11 +57,23 @@ export default function App() {
         data: { email, password },
       });
 
+
+
       const { token, user } = response.data;
 
+      const empDetails = await apiRequest({
+        method: 'POST',
+        url: '/spotlight/empDetails',
+        data: { email: user.email }
+      })
+
       // Set token and isEmployee in cookies
-      Cookies.set('token', token, { expires: 1 }); // 1 day expiration
+      Cookies.set('token', token, { expires: 1 });
       Cookies.set('isEmployee', user.role === 'employee' ? 'true' : 'false', { expires: 1 });
+      Cookies.set('userEmail', user.email)
+      Cookies.set('userName', empDetails?.data?.employee?.name)
+      Cookies.set('avatar', empDetails?.data?.employee?.avatar_url)
+      Cookies.set('roleTitle', empDetails?.data?.employee?.role_title)
 
       setIsLoggedIn(true);
       if (user.role === 'employee') {
@@ -70,7 +82,6 @@ export default function App() {
         setCurrentPage('admin');
       }
     } catch (error: any) {
-      console.log("login error---------->",error)
       alert(error.response?.data?.message || 'Login failed');
     }
   };
@@ -96,7 +107,7 @@ export default function App() {
   if (!isLoggedIn) {
     return <LoginPage onLogin={handleLogin} />;
   }
-
+  const isEmployee = Cookies.get("isEmployee") === "true" ? true : false;
   const renderPage = () => {
     switch (currentPage) {
       case 'dashboard':
@@ -122,7 +133,7 @@ export default function App() {
       case 'peer-appreciation': // new route
         return <PeerAppreciationPage navigateTo={navigateTo} />;
       default:
-        return <MainDashboard navigateTo={navigateTo} darkMode={darkMode} />;
+        return isEmployee ? <MainDashboard navigateTo={navigateTo} darkMode={darkMode} /> : <AdminDashboardPage darkMode={darkMode} />;
     }
   };
 

@@ -4,6 +4,8 @@ import { mockBadges, currentUser, topContributors } from '../data/mockData';
 import { BadgeUnlockModal } from '../components/badges/BadgeUnlockModal';
 import ProgressBar from '@ramonak/react-progress-bar';
 import type { Badge } from '../types/index';
+import apiRequest from '../utils/ApiService';
+import Cookies from 'js-cookie';
 
 
 // --- Badge thresholds (source of truth)
@@ -128,11 +130,32 @@ export function BadgesPage() {
   const [showUnlockModal, setShowUnlockModal] = useState(false);
   const [points, setPoints] = useState<number | null>(null);
   const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null)
+  const [nextBadgeName, setNextBadgeName] = useState("");
+  const [approvedAchievements, setApprovedAchievements] = useState("");
+  const [receivedAppreciation, setReceivedAppreciation] = useState("");
+  const [postReaction, setPostReaction] = useState("");
+  const [pointsNeeded, setPointsNeeded] = useState(0);
 
+
+  const userEmail = Cookies.get("userEmail");
+
+
+  const fetchPoints = async () => {
+    const res = await apiRequest({
+      method: 'POST',
+      url: '/spotlight/empBadges',
+      data: { email: userEmail }
+    })
+
+    setApprovedAchievements(res?.data?.totals?.total_achievements_uploaded ?? 0)
+    setReceivedAppreciation(res?.data?.totals?.total_peer_appreciations_received ?? 0)
+    setPostReaction(res?.data?.totals?.total_peer_appreciations_sent ?? 0)
+    setNextBadgeName(res?.data?.badges?.next_badge?.name ?? '')
+    setPointsNeeded(res?.data?.badges?.next_badge?.points_needed)
+
+    setPoints(res?.data?.employee?.total_points ?? 0)
+  };
   useEffect(() => {
-    const fetchPoints = async () => {
-      setPoints(800)
-    };
     fetchPoints();
   }, []);
 
@@ -141,8 +164,6 @@ export function BadgesPage() {
     [points]
   );
 
-  // const unlockedBadges = mockBadges.filter(b => b.unlocked);
-  // const lockedBadges = mockBadges.filter(b => !b.unlocked);
   const nextBadge = useMemo(() => getNextBadge(points, BADGES), [points]);
   const pointsToNext = nextBadge && points != null ? Math.max(nextBadge.pointsRequired - points, 0) : 0;
   const progressPercent = nextBadge && points != null
@@ -171,10 +192,10 @@ export function BadgesPage() {
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="text-center md:text-left">
             <p className="text-blue-100 mb-2">Your Current Points</p>
-            <p className="text-5xl mb-4">{currentUser.points}</p>
+            <p className="text-5xl mb-4">{points}</p>
             <p className="text-blue-100">
-              {pointsToNext > 0
-                ? `${pointsToNext} points to next badge`
+              {pointsNeeded > 0
+                ? `${pointsNeeded} points to ${nextBadgeName}`
                 : 'All badges unlocked! 🎉'
               }
             </p>
@@ -183,15 +204,9 @@ export function BadgesPage() {
             {nextBadge && (
               <>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-blue-100">Progress to {nextBadge.name}</span>
+                  <span className="text-blue-100">Progress to {nextBadgeName}</span>
                   <span className="text-white">{Math.round(progressPercent)}%</span>
                 </div>
-                {/* <div className="h-4 bg-blue-800 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-white rounded-full transition-all duration-500"
-                    style={{ width: `${progressPercent}%` }}
-                  />
-                </div> */}
                 <ProgressBar
                   completed={progressPercent}
                   maxCompleted={100}
@@ -219,7 +234,7 @@ export function BadgesPage() {
           <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
             <div className="flex items-center justify-between mb-2">
               <span className="text-green-900">Approved Achievement</span>
-              <span className="text-2xl text-green-900">+10</span>
+              <span className="text-2xl text-green-900">{approvedAchievements}</span>
             </div>
             <p className="text-sm text-green-700">
               When your achievement gets approved
@@ -228,7 +243,7 @@ export function BadgesPage() {
           <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <div className="flex items-center justify-between mb-2">
               <span className="text-blue-900">Received Appreciation</span>
-              <span className="text-2xl text-blue-900">+3</span>
+              <span className="text-2xl text-blue-900">{receivedAppreciation}</span>
             </div>
             <p className="text-sm text-blue-700">
               Each appreciation you receive
@@ -237,7 +252,7 @@ export function BadgesPage() {
           <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
             <div className="flex items-center justify-between mb-2">
               <span className="text-purple-900">Post Reaction</span>
-              <span className="text-2xl text-purple-900">+2</span>
+              <span className="text-2xl text-purple-900">{postReaction}</span>
             </div>
             <p className="text-sm text-purple-700">
               When someone reacts to your post
@@ -266,20 +281,7 @@ export function BadgesPage() {
                 onClick={() => handleBadgeClick(badge)}
               >
                 <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-2 border-yellow-400 rounded-xl p-6 text-center hover:shadow-lg transition-all duration-200 hover:scale-105">
-                  {/* <div className="text-5xl mb-3">{badge.name === "Rising Star"
-                    ? "🌟"
-                    : badge.name === "Achiever"
-                      ? "🏅"
-                      : badge.name === "Performer"
-                        ? "🎯"
-                        : badge.name === "Innovator"
-                          ? "💡"
-                          : badge.name === "Trailblazer"
-                            ? "🔥"
-                            : badge.name === "Legend"
-                              ? "👑"
-                              : ""}
-                  </div> */}
+
 
                   <div className="text-5xl mb-3">
                     {badgeEmoji(badge.name)}
@@ -310,19 +312,7 @@ export function BadgesPage() {
                 className="bg-neutral-50 border-2 border-neutral-200 rounded-xl p-6 text-center opacity-60"
               >
                 <div className="relative">
-                  {/* <div className="text-5xl mb-3 grayscale">{badge.name === "Rising Star"
-                    ? "🌟"
-                    : badge.name === "Achiever"
-                      ? "🏅"
-                      : badge.name === "Performer"
-                        ? "🎯"
-                        : badge.name === "Innovator"
-                          ? "💡"
-                          : badge.name === "Trailblazer"
-                            ? "🔥"
-                            : badge.name === "Legend"
-                              ? "👑"
-                              : ""}</div> */}
+
 
                   <div className="text-5xl mb-3 grayscale">
                     {badgeEmoji(badge.name)}

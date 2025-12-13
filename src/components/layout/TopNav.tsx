@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Bell, Menu, Search, Moon, Sun, LogOut, Settings, User } from 'lucide-react';
 import { currentUser, mockNotifications } from '../../data/mockData';
+import Cookies from 'js-cookie';
 
 interface TopNavProps {
   onMenuClick: () => void;
@@ -13,6 +14,10 @@ interface TopNavProps {
 export function TopNav({ onMenuClick, onNavigate, onLogout, darkMode, onToggleDarkMode }: TopNavProps) {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const userName = Cookies.get("userName");
+  const userEmail = Cookies.get("userEmail");
+  const roleTitle = Cookies.get("roleTitle");
+  const avatar = Cookies.get("avatar");
   
   const unreadCount = mockNotifications.filter(n => !n.read).length;
 
@@ -144,16 +149,16 @@ export function TopNav({ onMenuClick, onNavigate, onLogout, darkMode, onToggleDa
               }`}
             >
               <img
-                src={currentUser.avatar}
-                alt={currentUser.name}
+                src={avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}
+                alt={userName}
                 className="w-8 h-8 rounded-full border-2 border-blue-600"
               />
               <div className="hidden sm:block text-left">
                 <p className={`${darkMode ? 'text-white' : 'text-neutral-900'} leading-tight`}>
-                  {currentUser.name}
+                  {userName}
                 </p>
                 <p className={`text-xs ${darkMode ? 'text-neutral-400' : 'text-neutral-500'}`}>
-                  {currentUser.role}
+                  {roleTitle}
                 </p>
               </div>
             </button>
@@ -166,10 +171,10 @@ export function TopNav({ onMenuClick, onNavigate, onLogout, darkMode, onToggleDa
                   darkMode ? 'border-neutral-700' : 'border-neutral-200'
                 }`}>
                   <p className={darkMode ? 'text-white' : 'text-neutral-900'}>
-                    {currentUser.name}
+                    {userName}
                   </p>
                   <p className={`text-sm ${darkMode ? 'text-neutral-400' : 'text-neutral-500'}`}>
-                    {currentUser.email}
+                    {userEmail}
                   </p>
                 </div>
                 <button
